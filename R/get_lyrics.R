@@ -40,12 +40,16 @@
 #' 
 #' @export
 #' 
+# Gets all lyrics ----
 # Updated 08.08.2023
 get_lyrics <- function(artist_name, song_names, urls = NULL, verbose = TRUE)
 {
   
   # Check if URLs are already provided
   if(is.null(urls)){
+    
+    # Check for verbose
+    if(verbose){message("Fetching URLs...", appendLF = FALSE)}
     
     # Loop over song names
     SONG_URLS <- sapply(
@@ -62,7 +66,13 @@ get_lyrics <- function(artist_name, song_names, urls = NULL, verbose = TRUE)
       }
     )
     
+    # Return done
+    message("done")
+    
   }else{SONG_URLS <- urls}
+  
+  # Set en-dash
+  en_dash <- rawToChar(as.raw(c(0xE2, 0x80, 0x93)))
   
   # Check for verbose
   if(verbose){message("Getting lyrics for...")}
@@ -77,8 +87,8 @@ get_lyrics <- function(artist_name, song_names, urls = NULL, verbose = TRUE)
     ARTIST_SONG <- trimws(
       gsub("\\|.*", "", HTML_output %>% rvest::html_nodes('title') %>% rvest::html_text())
     )
-    ARTIST <- trimws(gsub("\\u2013.*", "", ARTIST_SONG))
-    SONG <- trimws(gsub("Lyrics", "", gsub(".*\\u2013", "", ARTIST_SONG)))
+    ARTIST <- trimws(gsub(paste0(en_dash, ".*"), "", ARTIST_SONG))
+    SONG <- trimws(gsub("Lyrics", "", gsub(paste0(".*", en_dash), "", ARTIST_SONG)))
     
     # Extract lyrics
     LYRICS <- HTML_output %>% rvest::html_nodes(xpath = '//*[@data-lyrics-container="true"]') %>% rvest::html_text()
@@ -88,6 +98,7 @@ get_lyrics <- function(artist_name, song_names, urls = NULL, verbose = TRUE)
     
     # Remove instrumental parts
     parts <- parts[!grepl("Instrumental", parts)]
+    parts <- parts[!grepl("Non-Lyrical Break", parts)]
     
     # Extract the text outside brackets
     outside_brackets <- stringr::str_split(LYRICS, "\\[.*?\\]") %>% unlist()
@@ -118,6 +129,10 @@ get_lyrics <- function(artist_name, song_names, urls = NULL, verbose = TRUE)
   # Get all lyrics as a data frame
   all_lyrics <- do.call(rbind.data.frame, all_lyrics)
   row.names(all_lyrics) <- NULL
+  
+  # Trim all lyrics one last time
+  all_lyrics$Lyric <- trimws(all_lyrics$Lyric)
+  all_lyrics$Lyric <- gsub("  ", " ", all_lyrics$Lyric)
   
   # Return results as data frame
   return(all_lyrics)
