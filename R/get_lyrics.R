@@ -41,7 +41,7 @@
 #' @export
 #' 
 # Gets all lyrics ----
-# Updated 08.08.2023
+# Updated 09.08.2023
 get_lyrics <- function(artist_name, song_names, urls = NULL, verbose = TRUE)
 {
   
@@ -90,6 +90,9 @@ get_lyrics <- function(artist_name, song_names, urls = NULL, verbose = TRUE)
     ARTIST <- trimws(gsub(paste0(en_dash, ".*"), "", ARTIST_SONG))
     SONG <- trimws(gsub("Lyrics", "", gsub(paste0(".*", en_dash), "", ARTIST_SONG)))
     
+    # Print message about getting lyrics
+    if(verbose){message(SONG)}
+    
     # Extract lyrics
     LYRICS <- HTML_output %>% rvest::html_nodes(xpath = '//*[@data-lyrics-container="true"]') %>% rvest::html_text()
     
@@ -109,9 +112,6 @@ get_lyrics <- function(artist_name, song_names, urls = NULL, verbose = TRUE)
     
     # Remove "( " space
     lyrics <- gsub("\\( ", "\\(", lyrics)
-    
-    # Print message about getting lyrics
-    if(verbose){message(SONG)}
     
     # Return data frame
     return(
