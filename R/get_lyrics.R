@@ -134,6 +134,10 @@ get_lyrics <- function(artist_name, song_names, urls = NULL, verbose = TRUE)
   all_lyrics$Lyric <- trimws(all_lyrics$Lyric)
   all_lyrics$Lyric <- gsub("  ", " ", all_lyrics$Lyric)
   
+  # Set right apostrophe
+  right_apostrophe <- rawToChar(as.raw(c(0xE2, 0x80, 0x99)))
+  all_lyrics$Song <- gsub(right_apostrophe, "'", all_lyrics$Song)
+  
   # Return results as data frame
   return(all_lyrics)
   
