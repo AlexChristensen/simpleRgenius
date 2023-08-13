@@ -154,3 +154,66 @@ split_words <- function(text) {
   return(text)
   
 }
+
+#%%%%%%%%%%%%%%%%%%%%%
+# TEXT PROCESSING ----
+#%%%%%%%%%%%%%%%%%%%%%
+
+#' @noRd
+# Character conversion
+# Updated 13.08.2023
+convert_HTML_characters <- function(string)
+{
+  
+  # List of characters
+  en_dash <- rawToChar(as.raw(c(0xE2, 0x80, 0x93)))
+  right_apostrophe <- rawToChar(as.raw(c(0xE2, 0x80, 0x99)))
+  
+  # Perform conversion
+  return(
+    gsub(
+      en_dash, "-", gsub(
+        right_apostrophe, "'", string
+      )
+    )
+  )
+  
+  
+}
+
+#' @noRd
+# `grepl` escapes
+# Updated 13.08.2023
+grepl_escapes <- function(string)
+{
+  
+  # List of characters
+  grepl_characters <- c(
+    "\\", "^", "$", ".", "|",
+    "?", "*", "+", "(", ")",
+    "[", "]", "{", "}"
+  )
+  
+  # Loop over characters
+  for(char in grepl_characters){
+    string <- gsub(
+      paste0("\\", char),
+      paste0("\\\\", char),
+      string
+    )
+  }
+  
+  # Return string
+  return(string)
+  
+}
+
+
+
+
+
+
+
+
+
+

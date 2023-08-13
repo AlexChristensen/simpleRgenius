@@ -41,7 +41,7 @@
 #' @export
 #' 
 # Gets all lyrics ----
-# Updated 09.08.2023
+# Updated 13.08.2023
 get_lyrics <- function(artist_name, song_names, urls = NULL, verbose = TRUE)
 {
   
@@ -58,8 +58,14 @@ get_lyrics <- function(artist_name, song_names, urls = NULL, verbose = TRUE)
         # Get top hits
         top_hits <- search_information(song_name, type = "song")
         
+        # Update song names
+        top_hits$song <- convert_HTML_characters(top_hits$song)
+        
         # Get top hits with artist name
         top_hits <- top_hits[top_hits$primary_artist == artist_name,]
+        
+        # Get top hits with song name
+        top_hits <- top_hits[grepl(grepl_escapes(song_name), top_hits$song),]
         
         # Return top hit with artist information
         return(top_hits[which.max(top_hits$page_views), "url"])
@@ -71,11 +77,11 @@ get_lyrics <- function(artist_name, song_names, urls = NULL, verbose = TRUE)
     
   }else{SONG_URLS <- urls}
   
-  # Set en-dash
-  en_dash <- rawToChar(as.raw(c(0xE2, 0x80, 0x93)))
-  
   # Check for verbose
   if(verbose){message("Getting lyrics for...")}
+  
+  # Set en-dash
+  en_dash <- rawToChar(as.raw(c(0xE2, 0x80, 0x93)))
   
   # Get all lyrics
   all_lyrics <- lapply(SONG_URLS, function(URL){
@@ -134,9 +140,8 @@ get_lyrics <- function(artist_name, song_names, urls = NULL, verbose = TRUE)
   all_lyrics$Lyric <- trimws(all_lyrics$Lyric)
   all_lyrics$Lyric <- gsub("  ", " ", all_lyrics$Lyric)
   
-  # Set right apostrophe
-  right_apostrophe <- rawToChar(as.raw(c(0xE2, 0x80, 0x99)))
-  all_lyrics$Song <- gsub(right_apostrophe, "'", all_lyrics$Song)
+  # Substitute HTML characters
+  all_lyrics$Song <- convert_HTML_characters(all_lyrics$Song)
   
   # Return results as data frame
   return(all_lyrics)
