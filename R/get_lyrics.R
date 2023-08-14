@@ -41,7 +41,7 @@
 #' @export
 #' 
 # Gets all lyrics ----
-# Updated 13.08.2023
+# Updated 14.08.2023
 get_lyrics <- function(artist_name, song_names, urls = NULL, verbose = TRUE)
 {
   
@@ -58,6 +58,10 @@ get_lyrics <- function(artist_name, song_names, urls = NULL, verbose = TRUE)
         # Get top hits
         top_hits <- search_information(song_name, type = "song")
         
+        # Set names to lower
+        song_name <- song_name
+        top_hits$song <- top_hits$song
+        
         # Update song names
         top_hits$song <- convert_HTML_characters(top_hits$song)
         
@@ -65,10 +69,20 @@ get_lyrics <- function(artist_name, song_names, urls = NULL, verbose = TRUE)
         top_hits <- top_hits[top_hits$primary_artist == artist_name,]
         
         # Get top hits with song name
-        top_hits <- top_hits[grepl(grepl_escapes(song_name), top_hits$song),]
+        top_hits <- top_hits[
+          grepl(tolower(grepl_escapes(song_name)), tolower(top_hits$song)),
+        ]
         
-        # Return top hit with artist information
-        return(top_hits[which.max(top_hits$page_views), "url"])
+        # Check for exact match
+        exact_match <- grepl(song_name, top_hits$song)
+        
+        # Use exact match (if possible)
+        if(sum(exact_match) == 1){
+          return(top_hits[exact_match, "url"])
+        }else{ # Return top hit with artist information
+          return(top_hits[which.max(top_hits$page_views), "url"])
+        }
+        
       }
     )
     
